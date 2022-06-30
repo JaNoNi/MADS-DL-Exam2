@@ -51,6 +51,9 @@ class MultiClassifier(nn.Module):
     def predict(self, x):
         return self.forward(x).argmax(dim=1)
 
+    def predict_proba(self, x):
+        return torch.exp(self.forward(x))
+
 
 class NeuralNet(pl.LightningModule):
     def __init__(
@@ -76,6 +79,12 @@ class NeuralNet(pl.LightningModule):
 
     def forward(self, x):
         return self.model(x)
+
+    def predict(self, x):
+        return self.model.predict(x)
+
+    def predict_proba(self, x):
+        return self.model.predict_proba(x)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr)

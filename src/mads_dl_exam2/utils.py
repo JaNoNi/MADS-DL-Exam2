@@ -1,20 +1,51 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
 import torch
-from sklearn.metrics import (accuracy_score, balanced_accuracy_score,
-                             confusion_matrix, f1_score, precision_score,
-                             recall_score)
+from sklearn.metrics import (
+    ConfusionMatrixDisplay,
+    accuracy_score,
+    balanced_accuracy_score,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    roc_auc_score,
+)
 from torch.utils.data import DataLoader, Dataset
 
 
+def plot_multi_conf(results, labels, title):
+    """Plot ConfusionMatrix.
+
+    Args:
+        results (Dictionary): Dictionary with confusion matrix arrays.
+        labels (List): Humanreadable ticklabel names.
+        title (String): Title for the subplots.
+    """
+    plots = len(results.keys())
+    fig, axes = plt.subplots(1, plots, figsize=(12, 6), dpi=200)
+    fig.suptitle(title)
+    for i, (key, item) in enumerate(results.items()):
+        ConfusionMatrixDisplay(item, display_labels=labels).plot(ax=axes[i], colorbar=False)
+        axes[i].set_title(key)
+        axes[i].grid(False)
+        if i:
+            axes[i].get_yaxis().set_visible(False)
+    fig.tight_layout()
+
+
 def compute_metrics(model, x: torch.Tensor, y) -> dict:
-    y_pred = model(x).argmax(dim=1)
+    y_pred = model.predict(x)
+    y_pred_proba = model.predict_proba(x)
     return {
-        "accuracy": accuracy_score(y, y_pred),
-        "balanced_accuracy": balanced_accuracy_score(y, y_pred),
-        "f1": f1_score(y, y_pred, average="macro"),
-        "precision": precision_score(y, y_pred, average="macro", labels=np.unique(y_pred)),
+        "Accuracy": round(accuracy_score(y, y_pred), 4),
+        "Balanced Accuracy": round(balanced_accuracy_score(y, y_pred), 4),
+        "ROC AUC": round(roc_auc_score(y, y_pred_proba, multi_class="ovr"), 4),
+        "F1": round(f1_score(y, y_pred, average="macro"), 4),
+        "Precision": round(
+            precision_score(y, y_pred, average="macro", labels=np.unique(y_pred)), 4
+        ),
         "confusion_matrix": confusion_matrix(y, y_pred),
     }
 
