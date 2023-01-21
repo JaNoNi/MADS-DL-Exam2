@@ -9,7 +9,7 @@ main = "src.mads_dl_exam2.main:main"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-torch = "^1.11.0"
+torch = "^1.13.1"
 protobuf = "~3.20.0"
 pandas = "^1.4.2"
 numpy = "^1.22.4"
